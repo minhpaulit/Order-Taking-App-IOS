@@ -198,8 +198,6 @@ struct ContentView: View {
 //    Main body
     var body: some View {
         TabView(selection: $selection) {
-                
-                    
             NavigationView{
                 VStack{
                     SearchBar(text: $searchText)
@@ -210,12 +208,20 @@ struct ContentView: View {
                                 VStack(alignment: .leading) {
                                     Text(item.orderNumber)
                                         .font(.headline)
-                                    Text(item.customerName)
-                                        .font(.subheadline)
-                                        .foregroundColor(.gray)
+                                    HStack{
+                                        Text(item.dineIn)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                            
+                                        Text(DateFormatter.localizedString(from: item.time, dateStyle: .none, timeStyle: .short))
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                            .frame(maxWidth: .infinity, alignment: .trailing)
+                                    }
+                                    
                                 }
                             }
-                            .navigationTitle("Orders")
+                            .navigationTitle("Orders" + "(\(orders.count))")
                         }
                         .listStyle(PlainListStyle())
                     }
@@ -256,26 +262,53 @@ struct OrderDetailSimpleView: View {
         VStack {
             Text("Order Number: \(order.orderNumber)")
                 .font(.title)
-            Text("Customer: \(order.customerName)")
-                .font(.headline)
-                // Display other order details...
+            
+            HStack{
+                Text(order.dineIn)
+                    .font(.headline)
+                    .padding(.horizontal)
+                Text(DateFormatter.localizedString(from: order.time, dateStyle: .none, timeStyle: .short))
+                    .font(.headline)
+                    .padding(.horizontal)
+                
+            }
+            
 
             Divider()
 
-            Text("Dishes:")
+            Text("Items:")
                 .font(.title3)
                 .padding(.top)
             if !order.items.isEmpty{
-                List(order.items) { dish in
+                List(order.items) { item in
                     VStack(alignment: .leading) {
-                        Text(dish.name)
-                        Text(String(format: "$%.2f", dish.price))
-                            .foregroundColor(.gray)
+                        HStack{
+                            Text("\(item.quantity) x \(item.name)")
+                            Text(String(format: "$%.2f", item.price))
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
+                        HStack{
+                            VStack(alignment: .leading){
+                                if !item.noteAdd.isEmpty{
+                                    Text("Add:" + item.noteAdd).foregroundColor(.red)
+                                }
+                                if !item.noteRemove.isEmpty{
+                                    Text("Remove" + item.noteRemove).foregroundColor(.red)
+                                }
+                            }
+                            if !item.noteRemove.isEmpty{
+                                Text("+" + String(item.additionalFee))
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                            }
+                        }
+                        
                     }
                 }
                 .listStyle(PlainListStyle())
                 Text("Total: \(String(format: "%.2f", order.total))")
-                    .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 Text("After Tax: \(String(format: "%.2f", order.total))")
                     .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
             }
@@ -318,7 +351,6 @@ struct OrderDetailSimpleView: View {
         .padding()
     }
 }
-
 //NEW ORDER BIG VIEW
 struct OrderDetailView: View {
     @State private var selectedCategory = categories[0]
@@ -701,6 +733,6 @@ struct CustomStepper: View {
 
 
 #Preview {
-//    ContentView()
-    OrderDetailView()
+    ContentView()
+//    OrderDetailView()
 }
