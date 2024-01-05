@@ -1,48 +1,13 @@
 //
-//  ContentView.swift
+//  OrderDetailView.swift
 //  eMenu
 //
-//  Created by Minh Paul on 01/01/2024.
+//  Created by Minh Paul on 05/01/2024.
 //
 
 import SwiftUI
 
 
-struct Order: Identifiable {
-    let id = UUID()
-    let orderNumber: String
-    let customerName: String
-    var items: [ItemOrder]
-    var total: Double
-    var time: Date
-    var dineIn: String
-    var printBill: Bool
-    var sendOrder: Bool
-    
-    init(orderNumber: String, customerName: String, items: [ItemOrder], total: Double, time: Date, dineIn: Bool, printBill: Bool, sendOrder: Bool) {
-        self.orderNumber = orderNumber
-        self.customerName = customerName
-        self.items = items
-        self.total = total
-        self.time = time
-        self.dineIn = "TakeOut"
-        self.printBill = printBill
-        self.sendOrder = sendOrder
-    }
-    
-    init(){
-        self.orderNumber = ""
-        self.customerName = ""
-        self.items  = []
-        self.total = 0
-        self.time = Date.now
-        self.dineIn = "1"
-        self.printBill = false
-        self.sendOrder = false
-    }
-    
-    
-}
 
 struct Category: Identifiable{
     var id = UUID()
@@ -50,91 +15,28 @@ struct Category: Identifiable{
     let items: [ItemOrder]
 }
 
-//struct Dish: Identifiable {
-//    let id = UUID()
-//    var discription = "It's very delicious"
-//    let name: String
-//    let price: Double
-//    let alergy = false
-//}
-
-struct ItemOrder: Identifiable{
-    let id = UUID()
-    let imageName: String
-    var name: String
-    let description = "It's very delicious"
-    let alergy = false
-    var quantity: Int
-    var price: Double
-    var noteAdd: String
-    var noteRemove: String
-    var additionalFee: Double
-    var image: Image {
-        if imageName.isEmpty{
-            Image(systemName: "star")
-        }
-        else{
-            Image(imageName)
-        }
-    }
-    
-    init() {
-        self.imageName = ""
-        self.name = ""
-        self.quantity = 1
-        self.price = 0.0
-        self.noteAdd = ""
-        self.noteRemove = ""
-        self.additionalFee = 0.0
-    }
-    
-    init(name: String, price: Double) {
-        self.imageName = ""
-        self.name = name
-        self.quantity = 1
-        self.price = price
-        self.noteAdd = ""
-        self.noteRemove = ""
-        self.additionalFee = 0.0
-    }
-}
-
-
-
-
 //    === meta_data
-    private var orders = [
-        Order(orderNumber: "001", customerName: "John Doe", items: [
-            ItemOrder(name: "Pizza", price: 12.99),
-            ItemOrder(name: "Salad", price: 8.99),
-        ],
-              total: 22,
-              time: Date.now,
-              dineIn: true,
-              printBill: true,
-              sendOrder: true)
-        ,
-        Order(orderNumber: "002", customerName: "Jane Smith", items: [
-            ItemOrder(name: "Burger", price: 9.99),
-            ItemOrder(name: "Fries", price: 4.99),
-        ],
-              total: 22,
-              time: Date.now,
-              dineIn: true,
-              printBill: true,
-              sendOrder: true)
-    ]
-
-    
-    private var all_dishes = [
+private var orders = [
+    Order(orderNumber: "001", customerName: "John Doe", items: [
+        ItemOrder(name: "Pizza", price: 12.99),
+        ItemOrder(name: "Salad", price: 8.99),
+    ],
+          total: 22,
+          time: Date.now,
+          dineIn: true,
+          printBill: true,
+          sendOrder: true)
+    ,
+    Order(orderNumber: "002", customerName: "Jane Smith", items: [
+        ItemOrder(name: "Burger", price: 9.99),
         ItemOrder(name: "Fries", price: 4.99),
-        ItemOrder(name: "Chicken Ball", price: 4.99),
-        ItemOrder(name: "Wontons", price: 4.99),
-        ItemOrder(name: "Egg Rolls", price: 4.99),
-        ItemOrder(name: "Wings", price: 5.99),
-        ItemOrder(name: "Shrims", price: 6.99),
-        ItemOrder(name: "Crabs", price: 7.99),
-    ]
+    ],
+          total: 22,
+          time: Date.now,
+          dineIn: true,
+          printBill: true,
+          sendOrder: true)
+]
     
 private var category_single = Category(name: "Dishes", items: [
     ItemOrder(name: "#1", price: 4.99),
@@ -154,203 +56,6 @@ private var category_dinner = Category(name: "Dinner", items: [
 private var categories = [category_combo, category_dinner, category_single]
 
 
-//    === end meta_data
-
-struct ContentView: View {
-
-    @State private var selection = 0
-    @State private var searchText = ""
-
-
-    @State private var isShowingOrderDetails = false
-    @State private var selectedOrder: Order?
-        
-// --- End Variable define
-    
-//    Draw ssearch bar
-    struct SearchBar: View {
-        @Binding var text: String
-        var body: some View {
-            HStack {
-                TextField("Search", text: $text)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-
-                Button(action: {
-                    text = ""
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                        .padding(.trailing)
-                }
-            }
-        }
-    }
-//    Search bar filter
-    var filteredOrders: [Order] {
-        if searchText.isEmpty {
-            return orders
-        } else {
-            return orders.filter { $0.orderNumber.lowercased().contains(searchText.lowercased()) || $0.customerName.lowercased().contains(searchText.lowercased())}
-        }
-    }
-
-//    Main body
-    var body: some View {
-        TabView(selection: $selection) {
-            NavigationView{
-                VStack{
-                    SearchBar(text: $searchText)
-                    NavigationView{
-                        
-                        List(filteredOrders) { item in
-                            NavigationLink(destination: OrderDetailSimpleView(order: item)){
-                                VStack(alignment: .leading) {
-                                    Text(item.orderNumber)
-                                        .font(.headline)
-                                    HStack{
-                                        Text(item.dineIn)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                            
-                                        Text(DateFormatter.localizedString(from: item.time, dateStyle: .none, timeStyle: .short))
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                            .frame(maxWidth: .infinity, alignment: .trailing)
-                                    }
-                                    
-                                }
-                            }
-                            .navigationTitle("Orders" + "(\(orders.count))")
-                        }
-                        .listStyle(PlainListStyle())
-                    }
-                    .navigationViewStyle(.columns)
-                    NavigationLink(destination: OrderDetailView()) {
-                                        Text("New Order")
-                                            .padding()
-                                            .background(Color.blue)
-                                            .foregroundColor(.white)
-                                            .cornerRadius(8)
-                                    }
-                }
-            }
-            .navigationViewStyle(.stack)
-            
-            .tabItem {
-                Image(systemName: "1.square")
-                Text("Tab 2")
-            }
-            .tag(0)
-            
-            Text("Tab 2 Content")
-            .tabItem {
-                Image(systemName: "2.square")
-                Text("Tab 2")
-            }
-            .tag(1)
-        }
-    }
-}
-
-
-//Brieft order
-struct OrderDetailSimpleView: View {
-    let order: Order
-
-    var body: some View {
-        VStack {
-            Text("Order Number: \(order.orderNumber)")
-                .font(.title)
-            
-            HStack{
-                Text(order.dineIn)
-                    .font(.headline)
-                    .padding(.horizontal)
-                Text(DateFormatter.localizedString(from: order.time, dateStyle: .none, timeStyle: .short))
-                    .font(.headline)
-                    .padding(.horizontal)
-                
-            }
-            
-
-            Divider()
-
-            Text("Items:")
-                .font(.title3)
-                .padding(.top)
-            if !order.items.isEmpty{
-                List(order.items) { item in
-                    VStack(alignment: .leading) {
-                        HStack{
-                            Text("\(item.quantity) x \(item.name)")
-                            Text(String(format: "$%.2f", item.price))
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        HStack{
-                            VStack(alignment: .leading){
-                                if !item.noteAdd.isEmpty{
-                                    Text("Add:" + item.noteAdd).foregroundColor(.red)
-                                }
-                                if !item.noteRemove.isEmpty{
-                                    Text("Remove" + item.noteRemove).foregroundColor(.red)
-                                }
-                            }
-                            if !item.noteRemove.isEmpty{
-                                Text("+" + String(item.additionalFee))
-                                    .foregroundColor(.red)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                            }
-                        }
-                        
-                    }
-                }
-                .listStyle(PlainListStyle())
-                Text("Total: \(String(format: "%.2f", order.total))")
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                Text("After Tax: \(String(format: "%.2f", order.total))")
-                    .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
-            }
-            
-            Divider().padding()
-            Spacer()
-            HStack{
-                Button(action: {
-                                // Action to perform when the button is tapped
-                                print("Button tapped!")
-                            }) {
-                                Text("Print")
-                                    .padding()
-                                    .foregroundColor(.white)
-                                    .background(Color.blue)
-                                    .cornerRadius(8)
-                            }
-                Button(action: {
-                                // Action to perform when the button is tapped
-                                print("Button tapped!")
-                            }) {
-                                Text("Edit")
-                                    .padding()
-                                    .foregroundColor(.white)
-                                    .background(Color.blue)
-                                    .cornerRadius(8)
-                            }
-                Button(action: {
-                                // Action to perform when the button is tapped
-                                print("Button tapped!")
-                            }) {
-                                Text("Paid")
-                                    .padding()
-                                    .foregroundColor(.white)
-                                    .background(Color.blue)
-                                    .cornerRadius(8)
-                            }
-            }
-        }
-        .padding()
-    }
-}
 //NEW ORDER BIG VIEW
 struct OrderDetailView: View {
     @State private var selectedCategory = categories[0]
@@ -488,10 +193,10 @@ struct OrderDetailView: View {
         var body: some View {
             VStack {
             
-                itemOrder.image
+                Image(systemName: "star")
                 Text(itemOrder.name)
                     .font(.headline)
-                Text(itemOrder.description)
+                Text(itemOrder.descriptions)
                     .font(.subheadline)
                     .padding()
                 
@@ -730,9 +435,6 @@ struct CustomStepper: View {
     }
 }
 
-
-
 #Preview {
-    ContentView()
-//    OrderDetailView()
+    OrderDetailView()
 }
