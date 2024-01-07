@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 
 
@@ -14,29 +15,6 @@ struct Category: Identifiable{
     let name: String
     let items: [ItemOrder]
 }
-
-//    === meta_data
-private var orders = [
-    Order(orderNumber: "001", customerName: "John Doe", items: [
-        ItemOrder(name: "Pizza", price: 12.99),
-        ItemOrder(name: "Salad", price: 8.99),
-    ],
-          total: 22,
-          time: Date.now,
-          dineIn: true,
-          printBill: true,
-          sendOrder: true)
-    ,
-    Order(orderNumber: "002", customerName: "Jane Smith", items: [
-        ItemOrder(name: "Burger", price: 9.99),
-        ItemOrder(name: "Fries", price: 4.99),
-    ],
-          total: 22,
-          time: Date.now,
-          dineIn: true,
-          printBill: true,
-          sendOrder: true)
-]
     
 private var category_single = Category(name: "Dishes", items: [
     ItemOrder(name: "#1", price: 4.99),
@@ -58,24 +36,26 @@ private var categories = [category_combo, category_dinner, category_single]
 
 //NEW ORDER BIG VIEW
 struct OrderDetailView: View {
-    @State private var selectedCategory = categories[0]
-    @State private var selectedItem: ItemOrder? = nil
+    
+    
     @State private var thisOrder = Order()
+    
+    @State private var itemOrders: [ItemOrder] = []
+    
+    @State private var selectedCategory = categories[0]
+    
     @State private var isShowingDetail = false
     @State private var isTimePickerPresented = false
     
-    let options = ["TakeOut", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+    let options = ["TakeOut", "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10", "Table 11", "Table 12", "Table 13"]
     
     var body: some View {
-        
-        
         HStack(spacing: 0) {
             // LEFT COLUMN: list Category
             VStack{
                 List(categories) { category in
                     Button(action: {
                             selectedCategory = category
-                        
                         }) {
                             HStack() {
                                 Text(category.name)
@@ -97,25 +77,29 @@ struct OrderDetailView: View {
             
             // MIDDLE COLUMN: list items
             VStack{
-                List(selectedCategory.items) { item in
-                    Button(action: {
-                        selectedItem = ItemOrder(name: item.name, price: item.price)
-                        isShowingDetail = true
-                    }) {
-                        Text(item.name)
+                NavigationStack{
+                    List(selectedCategory.items){ item in
+                        Button(action: {
+                            var item = ItemOrder(name: item.name, price: item.price)
+                            itemOrders.append(item)
+                            print("acc")
+                        }){
+                            HStack{
+                                Text(item.name)
+                                if !item.alergy{
+                                    Image(systemName: "leaf")
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                }
+                            }
+                        }
                     }
+                    .listStyle(.plain)
                 }
-                .listStyle(.plain)
-                .sheet(isPresented: $isShowingDetail) {
-                    ItemDetailView(itemOrder: Binding(
-                        get: { selectedItem ?? ItemOrder() }, set: { selectedItem = $0 }
-                    ), order: $thisOrder, isPresented: $isShowingDetail)
-                }
-
+                .background(Color(UIColor.systemGray6))
             }
             .background(Color(UIColor.systemGray6))
             .frame(maxHeight: .infinity)
-            .frame(width: UIScreen.main.bounds.width * 0.4)
+            .frame(width: UIScreen.main.bounds.width * 0.3)
             .padding(5)
             .cornerRadius(25)
             
@@ -123,27 +107,39 @@ struct OrderDetailView: View {
             // RIGHT COLUMN: summary
             VStack{
                 Spacer().frame(height: 10)
+                Text("Summary").font(.title)
+                    .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/ ,alignment: .center)
+                Divider()
                 
-                // Header summary
+                if !itemOrders.isEmpty {
+                    // Summary: List Item View
+                    SummaryItemsView(items: $itemOrders)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    
+                    Divider()
+                    // Summary: Total Money View
+                    SummaryTotalView(items: $itemOrders)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                Spacer()
+                Divider()
+                
+                // Summary column: Time and takeOut
                 HStack{
-                    // choose table
-                    Picker("Select an option", selection: $thisOrder.dineIn) {
+                    // TakeOut picker
+                    Picker("Select the table", selection: $thisOrder.dineIn) {
                             ForEach(options, id: \.self) { option in
                                 Text(option)
                             }
                         }
                         .pickerStyle(WheelPickerStyle())
-                        .frame(maxWidth: .infinity, maxHeight: 70) // Adjust size as needed
+                        .frame(maxWidth: .infinity, maxHeight: 50) // Adjust size as needed
 
-                    Text("Summary").font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
-                        .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/ ,alignment: .center)
-                    
-                    // choose time if takeout
+                    // time picker
                     VStack{
                         DatePicker("Time", selection: $thisOrder.time, displayedComponents: .hourAndMinute)
                             .datePickerStyle(DefaultDatePickerStyle())
                             .labelsHidden()
-                            .fixedSize()
                             .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/)
                             .disabled(thisOrder.dineIn != "TakeOut")
                         if thisOrder.time < Date.now && thisOrder.dineIn == "TakeOut"{
@@ -152,29 +148,17 @@ struct OrderDetailView: View {
                         }
                     }
                 }
+                .background(Color(UIColor.systemGray5))
                 Divider()
                 
-                
-                if !thisOrder.items.isEmpty {
-                    SummaryItemsView(order: $thisOrder)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                    Divider()
-                    SummaryTotalView(order: $thisOrder)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                } else {
-                    Text("No items")
-                    Spacer()
-                }
-                
-                Divider()
-                SummaryButtonView(order:$thisOrder)
+                // Summary Button View
+                SummaryButtonView(order:$thisOrder, items: itemOrders)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                                     .padding()
-                
             }
             .background(Color(UIColor.systemGray6))
             .frame(maxHeight: .infinity)
-            .frame(width: UIScreen.main.bounds.width * 0.4)
+            .frame(width: UIScreen.main.bounds.width * 0.5)
             .padding(5)
             .cornerRadius(25)
             
@@ -183,78 +167,19 @@ struct OrderDetailView: View {
     }
     
     
-    // POP-UP ITEM VIEW
-    struct ItemDetailView: View {
-        @Binding var itemOrder: ItemOrder
-        @Binding var order: Order
-        @Binding var isPresented: Bool
-        @State private var numberText: String = ""
-        
-        var body: some View {
-            VStack {
-            
-                Image(systemName: "star")
-                Text(itemOrder.name)
-                    .font(.headline)
-                Text(itemOrder.descriptions)
-                    .font(.subheadline)
-                    .padding()
-                
-                Text(String(format: "$%.2f", itemOrder.price))
-                CustomStepper(value: $itemOrder.quantity)
-                
-                TextField("Add", text: $itemOrder.noteAdd)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Remove", text: $itemOrder.noteRemove)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Surcharge", text: $numberText)
-                    .keyboardType(.decimalPad)
-                    .onChange(of: numberText, initial: true) { _,_  in
-                        if let value = Double(numberText) {
-                            itemOrder.additionalFee = value
-                        }
-                    }
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                // Button section
-                HStack {
-                   Button("Cancel") {
-                       isPresented = false
-                   }
-                   .padding()
-                   .foregroundColor(.white)
-                   .background(Color.red)
-                   .cornerRadius(8)
-                   
-                   Button("Confirm") {
-                       isPresented = false
-                       order.items.append(itemOrder)
-                   }
-                   .padding()
-                   .foregroundColor(.white)
-                   .background(Color.green)
-                   .cornerRadius(8)
-               }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .frame(width: UIScreen.main.bounds.width * 0.3)
-            .frame(height: UIScreen.main.bounds.height * 0.3)
-        }
-    }
 
     // SUMMARY: ITEMS
     struct SummaryItemsView: View {
-//        @Binding var lstItems: [ItemOrder]
-        @Binding var order: Order
+        @Binding var items: [ItemOrder]
+        @State var isShowPopUpItemView = false
         
         var body: some View {
             List {
-                ForEach($order.items) { $item in
+                ForEach($items) { $item in
                     VStack{
                         // line 1: item name & price
                         HStack {
-                            Text("\(item.name) Chicken Ball")
+                            Text("\(item.name)")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             Text(String(format: "$%.2f", item.price * Double(item.quantity)))
                                 .frame(alignment: .trailing)
@@ -275,7 +200,6 @@ struct OrderDetailView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                             }
-                            
                             if  !item.additionalFee.isZero{
                                 Text("+" + String(format: "$%.2f", item.additionalFee * Double(item.quantity)))
                                 .foregroundColor(.red)
@@ -283,7 +207,7 @@ struct OrderDetailView: View {
                             }
                         }
                         
-                        // line 3: Quantity and Stepper
+                        // line 3: QuantityItem and Stepper
                         HStack{
                             Text("Quantity: \(item.quantity)")
                             Stepper(String(item.quantity), value: $item.quantity, in: 1...10)
@@ -291,16 +215,23 @@ struct OrderDetailView: View {
                                 .fixedSize()
                                 .labelsHidden()
                             
-                            Text("Remove")
+                            Text("Edit")
                                 .onTapGesture(){
-                                    if let index = order.items.firstIndex(where: { $0.id == item.id }) {
-                                        order.items.remove(at: index)
+                                    isShowPopUpItemView.toggle()
                                 }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .foregroundColor(.red)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .foregroundColor(.red)
+                                .popover(isPresented: $isShowPopUpItemView, content: {
+                                    PopUpItemView(itemOrder: $item)
+                                })
+                            
                             
                         }
+                    }
+                }
+                .onDelete { indexes in
+                    for index in indexes{
+                        items.remove(at: index)
                     }
                 }
             }
@@ -310,13 +241,13 @@ struct OrderDetailView: View {
     }
     // SUMMARY: TOTAL SECTION
     struct SummaryTotalView: View {
-        @Binding var order: Order
+        @Binding var items: [ItemOrder]
         
         var body: some View {
             let subTotal = calculateTotalPrice()
             HStack{
                 VStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/){
-                    Text(String(order.items.count)).font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
+                    Text(String(items.count)).font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
                     Text("items")
                 }
                 .frame(maxWidth: .infinity)
@@ -344,7 +275,7 @@ struct OrderDetailView: View {
         // Function to calculate total price of items
         func calculateTotalPrice() -> Double {
             var totalPrice = 0.0
-            for item in order.items {
+            for item in items {
                 totalPrice += (item.price + item.additionalFee) * Double(item.quantity)
             }
             return totalPrice
@@ -353,8 +284,12 @@ struct OrderDetailView: View {
 
     // SUMMARY: BUTTONS SECTION
     struct SummaryButtonView: View {
-        @Environment(\.presentationMode) var presentationMode
         @Binding var order:Order
+        var items:[ItemOrder]
+        @Environment(\.modelContext) private var context
+        @Environment(\.presentationMode) var presentationMode
+        
+        
         var body: some View {
             HStack{
                 Button("Cancel") {
@@ -368,12 +303,15 @@ struct OrderDetailView: View {
                 
                 
                 Button("Print Bill") {
+                    order.items = items
+                    order.orderNumber = generateOrderNumber()
                     // send order
                     order.sendOrder = true
                     // print bill
                     order.printBill = true
-                    
+                    context.insert(order)
                     print(order)
+                    
                     presentationMode.wrappedValue.dismiss()
                 }
                 .padding()
@@ -395,45 +333,65 @@ struct OrderDetailView: View {
             }
         }
     }
-}
-
-// ================
-//      CSS
-// ================
-struct CustomStepper: View {
-    @Binding var value: Int
-    var body: some View {
-        HStack {
-            Button(action: {
-                if self.value > 0 {
-                    self.value -= 1
-                }
+    
+    // POP-UP ITEM VIEW
+    struct PopUpItemView: View {
+        @Binding var itemOrder: ItemOrder
+//        @Binding var isShowPopUpItemView: Bool
+        
+        @State private var numberText:String = " "
+        
                 
-            }) {
-                Image(systemName: "minus.square.fill")
-                    .foregroundColor(.blue)
-                    .font(.system(size: 25))
-                    
+        var body: some View {
+            VStack {
+                Text(itemOrder.name)
+                    .font(.headline)
+                Text(itemOrder.descriptions)
+                    .font(.subheadline)
+                    .padding()
+                
+                Text(String(format: "$%.2f", itemOrder.price))
+                CustomStepper(value: $itemOrder.quantity)
+                TextField("Add", text: $itemOrder.noteAdd)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                TextField("Remove", text: $itemOrder.noteRemove)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                TextField("Surcharge", text: $numberText)
+                    .keyboardType(.decimalPad)
+                    .onChange(of: numberText, initial: true) { _,_  in
+                        if let value = Double(numberText) {
+                            itemOrder.additionalFee = value
+                        }
+                    }
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                // Button section
+                HStack {
+                   Button("Cancel") {
+//                       isShowPopUpItemView = false
+                   }
+                   .padding()
+                   .foregroundColor(.white)
+                   .background(Color.red)
+                   .cornerRadius(8)
+                   
+                   Button("Confirm") {
+//                       isShowPopUpItemView = false
+                   }
+                   .padding()
+                   .foregroundColor(.white)
+                   .background(Color.green)
+                   .cornerRadius(8)
+               }
             }
-            .padding()
-
-            Text("\(value)")
-                .font(.title)
-
-            Button(action: {
-                self.value += 1
-            }) {
-                
-                Image(systemName: "plus.square.fill")
-                    .foregroundColor(.blue)
-                    .font(.system(size: 25))
-                    
-                
-            }
-            .padding()
+//            .padding()
+//            .frame(maxWidth: .infinity)
+//            .frame(width: UIScreen.main.bounds.width * 0.3)
+//            .frame(height: UIScreen.main.bounds.height * 0.3)
         }
     }
 }
+
 
 #Preview {
     OrderDetailView()

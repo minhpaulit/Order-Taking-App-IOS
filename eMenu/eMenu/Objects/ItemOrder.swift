@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import SwiftData
 
-struct ItemOrder: Identifiable{
+@Model
+class ItemOrder: Identifiable{
     let id = UUID()
     let imageName: String
     var name: String
@@ -19,14 +21,24 @@ struct ItemOrder: Identifiable{
     var noteRemove: String
     var additionalFee: Double
     
-    init() {
+    init(name: String, quantity: Int, price: Double, noteAdd: String, noteRemove: String, additionalFee: Double) {
         self.imageName = ""
-        self.name = ""
+        self.name = name
+        self.quantity = quantity
+        self.price = price
+        self.noteAdd = noteAdd
+        self.noteRemove = noteRemove
+        self.additionalFee = additionalFee
+    }
+    
+    init() {
+        self.imageName = "temp"
+        self.name = "temp"
         self.quantity = 1
-        self.price = 0.0
-        self.noteAdd = ""
-        self.noteRemove = ""
-        self.additionalFee = 0.0
+        self.price = 1.0
+        self.noteAdd = "temp"
+        self.noteRemove = "temp"
+        self.additionalFee = 1.0
     }
     
     init(name: String, price: Double) {
