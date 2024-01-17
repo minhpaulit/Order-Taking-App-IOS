@@ -80,7 +80,7 @@ struct OrderDetailView: View {
                 NavigationStack{
                     List(selectedCategory.items){ item in
                         Button(action: {
-                            var item = ItemOrder(name: item.name, price: item.price)
+                            let item = ItemOrder(name: item.name, price: item.price)
                             itemOrders.append(item)
                             print("acc")
                         }){
@@ -221,8 +221,8 @@ struct OrderDetailView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .foregroundColor(.red)
-                                .popover(isPresented: $isShowPopUpItemView, content: {
-                                    PopUpItemView(itemOrder: $item)
+                                .sheet(isPresented: $isShowPopUpItemView, content: {
+                                    PopUpItemView(itemOrder: $item, isShow: $isShowPopUpItemView)
                                 })
                             
                             
@@ -337,7 +337,7 @@ struct OrderDetailView: View {
     // POP-UP ITEM VIEW
     struct PopUpItemView: View {
         @Binding var itemOrder: ItemOrder
-//        @Binding var isShowPopUpItemView: Bool
+        @Binding var isShow: Bool
         
         @State private var numberText:String = " "
         
@@ -368,7 +368,7 @@ struct OrderDetailView: View {
                 // Button section
                 HStack {
                    Button("Cancel") {
-//                       isShowPopUpItemView = false
+                       isShow = false
                    }
                    .padding()
                    .foregroundColor(.white)
@@ -376,7 +376,7 @@ struct OrderDetailView: View {
                    .cornerRadius(8)
                    
                    Button("Confirm") {
-//                       isShowPopUpItemView = false
+                       isShow = false
                    }
                    .padding()
                    .foregroundColor(.white)
