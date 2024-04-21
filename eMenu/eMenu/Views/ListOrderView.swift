@@ -13,12 +13,12 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @Query private var orders: [Order]
     @State private var searchText = ""
-    @State private var isShowNewOrder: Bool = false
+    @State private var selection = 0
     
     // Main body
     var body: some View {
     
-        NavigationView{
+        TabView(selection: $selection) {
             VStack{
                 // Search bar
                 SearchBar(text: $searchText)
@@ -27,7 +27,7 @@ struct ContentView: View {
                 NavigationView{
                     List{
                         ForEach(filteredOrders){ item in
-                            NavigationLink(destination: OrderSummaryView(order: item)){
+                            NavigationLink(destination: ListOrderDetailView(order: item)){
                                 VStack(alignment: .leading) {
                                     Text(item.orderNumber)
                                         .font(.headline)
@@ -51,33 +51,30 @@ struct ContentView: View {
                     }
                     .listStyle(PlainListStyle())
                     .navigationTitle("Orders" + "(\(orders.count))")
-//                    .toolbar {
-//                        ToolbarItem(placement: .navigationBarTrailing) {
-//                            Button("+"){
-//                                isShowNewOrder.toggle()
-//                            }
-//                            .fullScreenCover(isPresented: $isShowNewOrder){
-//                                OrderDetailView()
-//                            }
-//                        }
-//                    }
-                    
                 }
                 .navigationViewStyle(.columns)
-                
-                // Button Create new view
-                NavigationLink(destination: OrderDetailView()) {
-                    Text("New Order")
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
+            }
+            .tabItem {
+                Image(systemName: "1.square.fill")
+                Text("List order")
+            }
+            
+            // Tab 2
+            NewOrderView()
+            .tabItem {
+                Image(systemName: "2.square.fill")
+                Text("New Order")
+            }
+            
+            
+            Text("Tab 3 Content")
+            .tabItem {
+                Image(systemName: "3.square.fill")
+                Text("Statistic")
             }
         }
-        .navigationViewStyle(.stack)
     }
+       
     
     // Search bar filter
     private var filteredOrders: [Order] {
