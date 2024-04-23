@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 private var orderCount: Int = 0
 
@@ -32,38 +31,44 @@ func generateOrderNumber() -> String {
         return "\(String(format: "#%03d", orderCount))-\(dateString)"
     }
 
-
-@Model
-class Order: Identifiable {
+class Order: Identifiable, ObservableObject {
     let id = UUID()
-    var orderNumber:String = "None"
+    var orderNumber: String = "None"
     let customerName: String
     var items: [ItemOrder]
+    var Addingitems: [ItemOrder]
     var total: Double
     var time: Date
     var dineIn: String
-    var printBill: Bool
+    var pay: Bool
     var sendOrder: Bool
-    
-    init(customerName: String, items: [ItemOrder], total: Double, time: Date, dineIn: String, printBill: Bool, sendOrder: Bool) {
+
+    init(customerName: String, items: [ItemOrder], Addingitems: [ItemOrder],  total: Double, time: Date, dineIn: String, pay: Bool, sendOrder: Bool) {
+        self.orderNumber = generateOrderNumber()
         self.customerName = customerName
         self.items = items
+        self.Addingitems = Addingitems
         self.total = total
         self.time = time
         self.dineIn = dineIn
-        self.printBill = printBill
+        self.pay = pay
         self.sendOrder = sendOrder
     }
-    
-    init(){
-        self.customerName = ""
-        self.items = []
-        self.total = 0
-        self.time = Date.now
-        self.dineIn = "TakeOut"
-        self.printBill = false
-        self.sendOrder = false
+
+    convenience init() {
+        self.init(customerName: "", items: [] , Addingitems: [], total: 0, time: Date(), dineIn: "TakeOut", pay: false, sendOrder: false)
     }
+}
+
+class OrderStore: ObservableObject {
+    @Published var listOrders: [Order] = []
+    @Published var currentOrder: Order?
     
 
+    func addOrder(_ order: Order) {
+        listOrders.append(order)
+    }
 }
+    
+
+

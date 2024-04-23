@@ -62,3 +62,15 @@ struct SearchBar: View {
     }
 }
 
+// Function to calculate total price of items
+func calculateTotalPrice(items: [ItemOrder]?) -> Double {
+    if let tempItems = items{
+        var totalPrice = 0.0
+        for item in tempItems {
+            totalPrice += (item.price + item.additionalFee) * Double(item.quantity)
+        }
+        return totalPrice
+    } else {
+        return 0
+    }
+}

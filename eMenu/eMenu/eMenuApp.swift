@@ -10,20 +10,25 @@ import SwiftData
 
 @main
 struct eMenuApp: App {
-    let modelContainer: ModelContainer
+//    let modelContainer: ModelContainer
             
-        init() {
-            do {
-                modelContainer = try ModelContainer(for: ItemOrder.self, Order.self)
-            } catch {
-                fatalError("Could not initialize ModelContainer")
-            }
-        }
+//        init() {
+//            do {
+//                modelContainer = try ModelContainer(for: ItemOrder.self, Order.self)
+//            } catch {
+//                fatalError("Could not initialize ModelContainer")
+//            }
+//        }
+    @StateObject var orderStore = OrderStore()
+    
     
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(orderStore)
         }
-        .modelContainer(modelContainer)
+//        .modelContainer(modelContainer)
     }
+    
+    
 }

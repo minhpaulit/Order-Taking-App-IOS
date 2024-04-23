@@ -6,197 +6,171 @@
 //
 
 import SwiftUI
-import SwiftData
-
-
-
-struct Category: Identifiable{
-    var id = UUID()
-    let name: String
-    let items: [ItemOrder]
-}
-    
-private var category_single = Category(name: "Dishes", items: [
-    ItemOrder(name: "#1", price: 4.99),
-    ItemOrder(name: "#2", price: 4.98),
-    ItemOrder(name: "#3", price: 4.97),
-])
-private var category_combo = Category(name: "Combo", items: [
-    ItemOrder(name: "Combo 1", price: 4.99),
-    ItemOrder(name: "Combo 12", price: 4.98),
-    ItemOrder(name: "Combo 13", price: 4.97),
-])
-private var category_dinner = Category(name: "Dinner", items: [
-    ItemOrder(name: "Dinner 1", price: 4.99),
-    ItemOrder(name: "Dinner 2", price: 4.98),
-    ItemOrder(name: "Dinner 3", price: 4.97),
-])
-private var categories = [category_combo, category_dinner, category_single]
-
 
 //NEW ORDER BIG VIEW
 struct NewOrderView: View {
     
-//    @State private var thisOrder = Order()
+    
+    @EnvironmentObject var orderStore: OrderStore
+    
+    private var thisOrder: Order?
     
     @State private var itemOrders: [ItemOrder] = []
     @State private var time = Date()
     @State private var table: String = "TakeOut"
-    @State private var notes: String = ""
     
     @State private var selectedCategory = categories[0]
+    @State private var customerTF = ""
     
-    
-    let options = ["TakeOut", "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10", "Table 11", "Table 12", "Table 13"]
     
     var body: some View {
-        VStack{
-            
-            // SECTION 1
-            HStack(spacing: 0) {
-                // LEFT COLUMN: list Category
-                VStack{
-                    List(categories) { category in
-                        Button(action: {
-                            selectedCategory = category
-                        }) {
-                            HStack() {
-                                Text(category.name)
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(category.items.count)")
-                                    .font(.subheadline)
-                            }
-                        }
+        
+        if let order = thisOrder {
+                        Text("Order ID: \(order.id)")
+                        // Other views related to the order
+                    } else {
+                        Text("No order selected")
                     }
-                    .listStyle(PlainListStyle())
-                }
-                .background(Color(UIColor.systemGray6))
-                .frame(maxWidth: .infinity)
-                .frame(width: UIScreen.main.bounds.width * 0.2)
-                .padding(5)
-                .cornerRadius(25)
-                
-                
-                // MIDDLE COLUMN: list items
-                VStack{
-                    List(selectedCategory.items){ item in
-                        Button(action: {
-                            let item = ItemOrder(name: item.name, price: item.price)
-                            itemOrders.append(item)
-                        }){
-                            HStack{
-                                Text(item.name)
-                                Spacer()
-                                if !item.alergy{
-                                    Image(systemName: "leaf")
-                                        
+        
+        
+        GeometryReader { geometry in
+            VStack{
+                // SECTION 1
+                HStack(spacing: 0) {
+                    // LEFT COLUMN: list categories
+                    VStack{
+                        List{
+                            ForEach(categories){ item in
+                                Button(action: {
+                                    selectedCategory = item
+                                }){
+                                    Text(item.name)
                                 }
                             }
                         }
+                        .listStyle(.plain)
                     }
-                    .listStyle(.plain)
-                }
-                .background(Color(UIColor.systemGray6))
-                .frame(maxHeight: .infinity)
-                .frame(width: UIScreen.main.bounds.width * 0.3)
-                .padding(5)
-                .cornerRadius(25)
-                
-                
-                // RIGHT COLUMN: summary
-                VStack{
-                    Spacer().frame(height: 10)
-                    Text("Summary").font(.title) .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/ ,alignment: .center)
-                    Spacer()
-                    Divider()
-                    if !itemOrders.isEmpty {
-                        // Summary: List Item View
-                        ListItemsView(items: $itemOrders)
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .background(Color(UIColor.systemGray6))
+                    .padding(5)
+                    .cornerRadius(25)
+                    .frame(width: geometry.size.width * 0.2)
+                    
+                    
+                    // MIDDLE COLUMN: list items
+                    VStack{
+                        List{
+                            ForEach(selectedCategory.items){ item in
+                                Button(action: {
+                                    let newItem = ItemOrder(name: item.name, price: item.price)
+                                    itemOrders.append(newItem)
+                                }){
+                                    HStack{
+                                        Text(item.name)
+                                        Spacer()
+                                        if !item.allergy {
+                                            Image(systemName: "leaf")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .listStyle(.plain)
                     }
+                    .background(Color(UIColor.systemGray6))
+                    .padding(5)
+                    .cornerRadius(25)
+                    .frame(width: geometry.size.width * 0.3)
                     
                     
-                }
-                .background(Color(UIColor.systemGray6))
-                .frame(maxHeight: .infinity)
-                .frame(width: UIScreen.main.bounds.width * 0.5)
-                .padding(5)
-                .cornerRadius(25)
-                
-            }
-            .background(Color(UIColor.systemGray5))
-            .frame(height: UIScreen.main.bounds.height * 0.75)
-            
-            
-            // SECTION 2
-            HStack(spacing: 0) {
-                // Column 1
-                VStack{
-                    
-                    
-                    Text("Order: #005-240709").font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
-                        
-                    TextField("Enter Notes Here", text: $notes).font(.system(size: 20))
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .padding(.horizontal)
-                    HStack{
-                            
-                            // TakeOut Picker
-                            Picker("Select the table", selection: $table) {
-                                    ForEach(options, id: \.self) { option in Text(option) } }
-                                .pickerStyle(WheelPickerStyle())
-                                .frame(maxWidth: .infinity, maxHeight: 100) // Adjust size as needed
-                                .frame(width: UIScreen.main.bounds.width * 0.2)
+                    // RIGHT COLUMN: summary
+                    VStack{
+                        Text("Order: #005-240709").font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/).padding(.top)
+                        HStack{
+                            // Customer Picker
+                            TextField("Customer", text: $customerTF, onCommit: {
+                                hideKeyboard()
+                            }).textFieldStyle(RoundedBorderTextFieldStyle())
+                                .onTapGesture {
+                                    hideKeyboard()
+                                }
                             Spacer()
-                        
-                            if time < Date.now && table == "TakeOut"{
-                                Text("Over Due!")
-                                    .foregroundColor(.red)
-                                }
+                            
+                            // Table Picker
+                            Picker("Select the table", selection: $table) {
+                                ForEach(tables, id: \.self) { option in Text(option) } }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(height: 60)
+                            Spacer()
+                            
                             // Time Picker
-                            DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
-                                .datePickerStyle(DefaultDatePickerStyle())
-                                .labelsHidden()
-                                .disabled(table != "TakeOut")
-                            
-                            
-
-                    }.padding(.horizontal)
+                            VStack{
+                                DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
+                                    .datePickerStyle(DefaultDatePickerStyle())
+                                    .labelsHidden()
+                                    .disabled(table != "TakeOut")
+                                    .background(time < Date.now && table == "TakeOut" ? Color.red.opacity(0.5) : Color.clear)
+                                    .cornerRadius(10)
+                            }
+                        }.padding(.horizontal)
+                        Divider()
+                        Spacer()
+                        if !itemOrders.isEmpty {
+//                            if thisOrder?.items != nil {
+//                                ListItemsView(items: thisOrder?.items)
+//                            }
+                            ListItemsView(items: $itemOrders)
+                                .frame(maxWidth: .infinity, alignment: .topLeading)
+                        }
+                    }
+                    .background(Color(UIColor.systemGray6))
+                    .padding(5)
+                    .frame(width: geometry.size.width * 0.5)
                     
-                    Spacer()
                 }
-                .background(Color(UIColor.systemGray6))
-                .frame(width: UIScreen.main.bounds.width * 0.5)
-                .padding(5)
-                .cornerRadius(25)
+                .background(Color(UIColor.systemGray5))
+                .frame(height: geometry.size.height * 0.8)
                 
                 
-                // Column 2
-                VStack{
-                    SummaryPriceView(items: itemOrders).padding()
-                    Divider()
-                    SummaryButtonView(items: $itemOrders, time: $time, table: $table) .padding()
+                
+                // SECTION 2
+                HStack(spacing: 0) {
+                    // Column 1
+                    VStack{
+                        Text("__________________________________________________________________")
+                        Spacer()
+                        
+                    }
+                    .background(Color(UIColor.systemGray6))
+                    .padding(5)
+                    .cornerRadius(25)
+                    
+                    
+                    // Column 2
+                    VStack{
+                        SummaryPriceView(items: itemOrders).padding()
+                        Divider()
+                        Spacer()
+                        SummaryButtonView(items: $itemOrders, time: $time, table: $table)
+                    }
+                    .background(Color(UIColor.systemGray6))
+                    .padding(5)
+                    .cornerRadius(25)
+                    
+                    
                 }
-                .background(Color(UIColor.systemGray6))
-                .frame(width: UIScreen.main.bounds.width * 0.5)
-                .padding(5)
-                .cornerRadius(25)
-                
+                .background(Color(UIColor.systemGray5))
+                .frame(height: geometry.size.height * 0.2)
                 
             }
-            .background(Color(UIColor.systemGray5))
-            .frame(height: UIScreen.main.bounds.height * 0.25)
-            
         }
     }
-  
     
     
     
-//
-//CHILD VIEW
-//
+    
+    //
+    //CHILD VIEW
+    //
     
     
     
@@ -216,7 +190,7 @@ struct NewOrderView: View {
                             Text(String(format: "$%.2f", item.price * Double(item.quantity)))
                                 .frame(alignment: .trailing)
                                 .foregroundColor(.gray)
-
+                            
                         }
                         // line 2: Optional Note
                         HStack{
@@ -234,8 +208,8 @@ struct NewOrderView: View {
                             }
                             if  !item.additionalFee.isZero{
                                 Text("+" + String(format: "$%.2f", item.additionalFee * Double(item.quantity)))
-                                .foregroundColor(.red)
-                                .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
                             }
                         }
                         
@@ -266,7 +240,7 @@ struct NewOrderView: View {
                 }
             }
             .listStyle(.plain)
-           
+            
         }
     }
     
@@ -310,29 +284,23 @@ struct NewOrderView: View {
             
         }
         
-
+        
     }
-
+    
     // SUMMARY: BUTTONS SECTION
     struct SummaryButtonView: View {
+        @EnvironmentObject var orderStore: OrderStore
         
         @Binding var items:[ItemOrder]
         @Binding var time: Date
         @Binding var table: String
-        @Environment(\.modelContext) private var context
+        
+        //        @Environment(\.modelContext) private var context
         @Environment(\.presentationMode) var presentationMode
         
         var body: some View {
             HStack{
-                Button("   Reset   ") {
-                    items = [] ; time = Date.now ; table = "TakeOut"
-                }
-                .padding()
-                .background(Color.red)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                
-                Button("Send Order") {
+                Button(action: {
                     let order = Order()
                     order.orderNumber = generateOrderNumber()
                     order.time = time
@@ -340,26 +308,33 @@ struct NewOrderView: View {
                     order.items = items
                     order.sendOrder = true
                     if order.dineIn == "TakeOut"{
-                        order.printBill = false
+                        order.pay = false
                     } else {
-                        order.printBill = true
+                        order.pay = true
                     }
-                    order.printBill = false
+                    order.pay = false
                     order.total = calculateTotalPrice(items: items)
-                    context.insert(order)
+                    //                    context.insert(order)
                     print(order)
+                    orderStore.listOrders.append(order)
                     items = [] ; time = Date.now ; table = "TakeOut"
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Send order")
+                        .font(.title)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                    
                 }
-                .padding()
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                
+                
                 
             }
         }
     }
-        
+    
     // POP-UP ITEM VIEW
     struct PopUpItemView: View {
         @Binding var itemOrder: ItemOrder
@@ -371,14 +346,14 @@ struct NewOrderView: View {
         @State private var selectedItems2 = Set<String>()
         let items2 = ["Onions", "Hành", "Cà chua", "Tomato"]
         
-                
+        
         var body: some View {
             VStack {
                 Text(itemOrder.name)
                     .font(.title).padding()
-                Text(itemOrder.descriptions)
-                    .font(.subheadline)
-                    .padding()
+                //                Text(itemOrder.descriptions)
+                //                    .font(.subheadline)
+                //                    .padding()
                 
                 Text(String(format: "$%.2f", itemOrder.price))
                 CustomStepper(value: $itemOrder.quantity)
@@ -411,25 +386,25 @@ struct NewOrderView: View {
                 
                 // Button section
                 HStack {
-                   Button("Cancel") {
-                       isShow = false
-                   }
-                   .padding()
-                   .foregroundColor(.white)
-                   .background(Color.red)
-                   .cornerRadius(8)
-                   
-                   Button("Confirm") {
-                       isShow = false
-                       itemOrder.noteAdd = selectedItems.joined(separator: ", ")
-                       itemOrder.noteRemove = selectedItems2.joined(separator: ", ")
-                       
-                   }
-                   .padding()
-                   .foregroundColor(.white)
-                   .background(Color.green)
-                   .cornerRadius(8)
-               }
+                    Button("Cancel") {
+                        isShow = false
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.red)
+                    .cornerRadius(8)
+                    
+                    Button("Confirm") {
+                        isShow = false
+                        itemOrder.noteAdd = selectedItems.joined(separator: ", ")
+                        itemOrder.noteRemove = selectedItems2.joined(separator: ", ")
+                        
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.green)
+                    .cornerRadius(8)
+                }
             }
         }
     }
@@ -456,23 +431,18 @@ struct NewOrderView: View {
     }
     
     
-
-}
-
-// Function to calculate total price of items
-func calculateTotalPrice(items: [ItemOrder]?) -> Double {
-    if let tempItems = items{
-        var totalPrice = 0.0
-        for item in tempItems {
-            totalPrice += (item.price + item.additionalFee) * Double(item.quantity)
-        }
-        return totalPrice
-    } else {
-        return 0
-    }
+    
 }
 
 
-#Preview {
-    NewOrderView()
+
+func hideKeyboard() {
+    // Dismiss the keyboard
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 }
+
+
+//#Preview {
+//    NewOrderView()
+//        .environmentObject(OrderStore())
+//}
