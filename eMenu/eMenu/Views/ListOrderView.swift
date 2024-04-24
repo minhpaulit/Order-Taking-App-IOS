@@ -43,11 +43,7 @@ let item24 = ItemOrder(name: "Com ga", quantity: 3, price: 6.0, noteAdd: "", not
 
 let tables = ["TakeOut", "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9", "Table 10", "Table 11", "Table 12", "Table 13"]
 
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 
 struct ContentView: View {
@@ -55,28 +51,70 @@ struct ContentView: View {
     @EnvironmentObject var orderStore: OrderStore
     @State private var isNewOrderView = false
     @State var selectedOrder: Order = Order()
+    @State var filter = "All"
     
     // Main body
     var body: some View {
-        
-        
         NavigationView{
             VStack{
                 Text("SaiGon's Garden").font(.title)
-                GeometryReader { geometry in
+                NavigationView{
                     HStack{
                         VStack{
                             // Search bar
-                            SearchBar(text: $searchText)
+                            HStack{
+                                SearchBar(text: $searchText)
+                                NavigationLink(destination: NewOrderView()) {
+                                    Text("New order")
+                                }
+                            }
+                            
+                            // Filters
+                            HStack(spacing: 0){
+                                Button(action: {
+                                    filter = "All"
+                                    }) {
+                                        Text("All")
+                                            .frame(maxWidth: .infinity)
+                                            .background(filter == "All" ? Color.blue : Color.clear)
+                                            .foregroundColor(filter == "All" ? Color.white : Color.blue)
+                                            .border(Color.blue, width: 1)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                Button(action: {
+                                    filter = "Dine in"
+                                    }) {
+                                        Text("Dine in")
+                                            .frame(maxWidth: .infinity)
+                                            .background(filter == "Dine in" ? Color.blue : Color.clear)
+                                            .foregroundColor(filter == "Dine in" ? Color.white : Color.blue)
+                                            .border(Color.blue, width: 1)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                Button(action: {
+                                    filter = "Take out"
+                                    }) {
+                                        Text("Take out")
+                                            .frame(maxWidth: .infinity)
+                                            .background(filter == "Take out" ? Color.blue : Color.clear)
+                                            .foregroundColor(filter == "Take out" ? Color.white : Color.blue)
+                                            .border(Color.blue, width: 1)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                            }
+                            .padding(.horizontal)
+                            
                             List{
-                                ForEach(orderStore.listOrders){ item in
-                                    Button(action:{
-                                        selectedOrder = item
-                                    })
+                                ForEach(filteredOrders){ item in
+//                                    Button(action:{
+//                                        orderStore.currentOrder = item
+//                                    })
+                                    NavigationLink(destination: ListOrderDetailView(order: item))
                                     {
                                         VStack(alignment: .leading) {
                                             Text(item.orderNumber)
                                                 .font(.headline)
+                                            Text(item.isPay ? "Paid" : "")
                                             HStack{
                                                 Text(item.dineIn)
                                                     .font(.subheadline)
@@ -94,17 +132,14 @@ struct ContentView: View {
                                         orderStore.listOrders.remove(at: index)
                                     }
                                 }
+                                NavigationLink(destination: NewOrderView()) {
+                                    Text("New Order").foregroundColor(.blue)
+                                }
                             }
                             .listStyle(PlainListStyle())
-                            NavigationLink(destination: NewOrderView()) {
-                                Text("New Order")
-                            }
                             
                         }
-                        .frame(width: geometry.size.width * 0.3)
-                        VStack{
-                            ListOrderDetailView(order: $selectedOrder)
-                        }.frame(width: geometry.size.width * 0.7)
+                        
                         
                     }
                 }
@@ -119,13 +154,13 @@ struct ContentView: View {
     @State var selection = 0
     
     // Search bar filter
-//    private var filteredOrders: [Order] {
-//        if searchText.isEmpty {
-//            return orderStore.listOrders
-//        } else {
-//            return orderStore.listOrders.filter { $0.orderNumber.lowercased().contains(searchText.lowercased()) || $0.customerName.lowercased().contains(searchText.lowercased())}
-//        }
-//    }
+    private var filteredOrders: [Order] {
+        if searchText.isEmpty {
+            return orderStore.listOrders
+        } else {
+            return orderStore.listOrders.filter { $0.orderNumber.lowercased().contains(searchText.lowercased()) || $0.customerName.lowercased().contains(searchText.lowercased())}
+        }
+    }
 }
 
 

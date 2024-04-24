@@ -1,16 +1,17 @@
 import Foundation
 
-class ItemOrder: Identifiable {
+
+class ItemOrder: Identifiable, ObservableObject {
     let id = UUID()
-    let imageName: String
-    var name: String
-    let description: String
-    let allergy: Bool
-    var quantity: Int
-    var price: Double
-    var noteAdd: String
-    var noteRemove: String
-    var additionalFee: Double
+    @Published var imageName: String
+    @Published var name: String
+    @Published var description: String
+    @Published var allergy: Bool
+    @Published var quantity: Int
+    @Published var price: Double
+    @Published var noteAdd: String
+    @Published var noteRemove: String
+    @Published var additionalFee: Double
     
     init(name: String, quantity: Int, price: Double, noteAdd: String, noteRemove: String, additionalFee: Double, imageName: String = "", description: String = "It's very delicious", allergy: Bool = false) {
         self.imageName = imageName
@@ -26,6 +27,10 @@ class ItemOrder: Identifiable {
     
     convenience init(name: String, price: Double) {
             self.init(name: name, quantity: 1, price: price, noteAdd: "", noteRemove: "", additionalFee: 0.0)
+        }
+    
+    convenience init(name: String, price: Double, quantity: Int) {
+            self.init(name: name, quantity: quantity, price: price, noteAdd: "", noteRemove: "", additionalFee: 0.0)
         }
     
     init(itemOrder: ItemOrder) {

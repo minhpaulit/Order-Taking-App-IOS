@@ -49,7 +49,7 @@ struct SearchBar: View {
         HStack {
             TextField("Search", text: $text)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
+                .padding(.leading)
 
             Button(action: {
                 text = ""

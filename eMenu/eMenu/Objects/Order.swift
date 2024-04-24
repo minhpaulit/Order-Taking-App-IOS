@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 private var orderCount: Int = 0
 
 func generateOrderNumber() -> String {
@@ -33,17 +34,18 @@ func generateOrderNumber() -> String {
 
 class Order: Identifiable, ObservableObject {
     let id = UUID()
-    var orderNumber: String = "None"
-    let customerName: String
-    var items: [ItemOrder]
-    var Addingitems: [ItemOrder]
-    var total: Double
-    var time: Date
-    var dineIn: String
-    var pay: Bool
-    var sendOrder: Bool
+    @Published var orderNumber: String = "None"
+    @Published var customerName: String
+    @Published var items: [ItemOrder]
+    @Published var Addingitems: [ItemOrder]
+    @Published var total: Double
+    @Published var time: Date
+    @Published var dineIn: String
+    @Published var isPay: Bool
+    @Published var payment: String
+    @Published var sendOrder: Bool
 
-    init(customerName: String, items: [ItemOrder], Addingitems: [ItemOrder],  total: Double, time: Date, dineIn: String, pay: Bool, sendOrder: Bool) {
+    init(customerName: String, items: [ItemOrder], Addingitems: [ItemOrder],  total: Double, time: Date, dineIn: String, isPay: Bool, payment: String, sendOrder: Bool) {
         self.orderNumber = generateOrderNumber()
         self.customerName = customerName
         self.items = items
@@ -51,18 +53,32 @@ class Order: Identifiable, ObservableObject {
         self.total = total
         self.time = time
         self.dineIn = dineIn
-        self.pay = pay
+        self.isPay = isPay
+        self.payment = payment
         self.sendOrder = sendOrder
+    }
+    
+    init(order: Order) {
+        self.orderNumber = order.orderNumber
+        self.customerName = order.customerName
+        self.items = order.items.map { ItemOrder(itemOrder: $0) }
+        self.Addingitems = order.Addingitems.map { ItemOrder(itemOrder: $0) }
+        self.total = order.total
+        self.time = order.time
+        self.dineIn = order.dineIn
+        self.isPay = order.isPay
+        self.payment = order.payment
+        self.sendOrder = order.sendOrder
     }
 
     convenience init() {
-        self.init(customerName: "", items: [] , Addingitems: [], total: 0, time: Date(), dineIn: "TakeOut", pay: false, sendOrder: false)
+        self.init(customerName: "", items: [] , Addingitems: [], total: 0, time: Date(), dineIn: "TakeOut", isPay: false, payment: "", sendOrder: false)
     }
 }
 
 class OrderStore: ObservableObject {
     @Published var listOrders: [Order] = []
-    @Published var currentOrder: Order?
+    @Published var currentOrder = Order(customerName: "Alice", items: [item21, item22], Addingitems: [], total: 10.5, time: Date(), dineIn: "TakeOut", isPay: false, payment: "Cash", sendOrder: false)
     
 
     func addOrder(_ order: Order) {

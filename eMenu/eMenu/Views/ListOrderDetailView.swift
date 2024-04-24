@@ -13,12 +13,11 @@ var item3 = ItemOrder(name: "Small sauge", price: 1.0)
 var item4 = ItemOrder(name: "Large sauge", price: 2.0)
 let listAddItem = [item1, item2, item3, item4]
 
-
 struct ListOrderDetailView: View {
-    @Binding var order: Order
+    @StateObject var order:Order
+    //    @EnvironmentObject var orderStore: OrderStore
     @State private var paymentMethod: String?
-    @State private var AddedItems: [ItemOrder] = []
-    @State private var pay: Bool?
+    @State private var pay: Bool = false
     
     var body: some View {
         VStack {
@@ -34,7 +33,7 @@ struct ListOrderDetailView: View {
                     .font(.headline)
                     .padding(.horizontal)
             }
-                        
+            
             // List items
             if !order.items.isEmpty{
                 List {
@@ -65,16 +64,16 @@ struct ListOrderDetailView: View {
                         }
                     }
                     // List Added items
-                    if !AddedItems.isEmpty{
-                        ForEach(AddedItems.indices, id: \.self) { index in
+                    if !order.Addingitems.isEmpty{
+                        ForEach(order.Addingitems.indices, id: \.self) { index in
                             VStack(alignment: .leading) {
                                 HStack{
-                                    Text("\(AddedItems[index].quantity) x \(AddedItems[index].name)")
-                                    Text(String(format: "$%.2f", AddedItems[index].price * Double(AddedItems[index].quantity)))
+                                    Text("\(order.Addingitems[index].quantity) x \(order.Addingitems[index].name)")
+                                    Text(String(format: "$%.2f", order.Addingitems[index].price * Double(order.Addingitems[index].quantity)))
                                         .foregroundColor(.gray)
                                         .frame(maxWidth: .infinity, alignment: .trailing)
                                     Button(action: {
-                                        AddedItems.remove(at: index)
+                                        order.Addingitems.remove(at: index)
                                     }) {
                                         Image(systemName: "xmark")
                                             .foregroundColor(.red)
@@ -87,6 +86,7 @@ struct ListOrderDetailView: View {
                 }
                 .listStyle(PlainListStyle())
             }
+            Spacer()
             
             // Price total Section
             VStack(alignment:.trailing){
@@ -107,15 +107,17 @@ struct ListOrderDetailView: View {
                 VStack(spacing:0){
                     VStack(alignment:.leading, spacing: 1){
                         Text("Quick add:").fixedSize(horizontal: false, vertical: true)
+                        // Quick add buttons
                         HStack{
                             ScrollView(.horizontal) {
                                 LazyHGrid(rows: [GridItem(.flexible())]) {
                                     ForEach(listAddItem) { item in
                                         Button(action: {
-                                            if let existingIndex = AddedItems.firstIndex(where: { $0.name == item.name }) {
-                                                AddedItems[existingIndex].quantity += 1
+                                            if let index = order.Addingitems.firstIndex(where: { $0.name == item.name }) {
+                                                order.Addingitems[index].quantity += 1
+                                                order.objectWillChange.send()
                                             } else {
-                                                AddedItems.append(ItemOrder(itemOrder: item))
+                                                order.Addingitems.append(ItemOrder(itemOrder: item))
                                             }
                                         }) {
                                             Text(item.name)
@@ -179,13 +181,13 @@ struct ListOrderDetailView: View {
                                 .font(.title)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(paymentMethod == "Cash" ? order.pay == true ? Color.gray : Color.blue : Color.clear)
+                                .background(paymentMethod == "Cash" ? pay == true ? Color.gray : Color.blue : Color.clear)
                                 .foregroundColor(paymentMethod == "Cash" ? Color.white : Color.blue)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 0)
                                         .stroke(Color.blue, lineWidth: 1))
                         }
-                        .disabled(order.pay == true)
+                        .disabled(pay == true)
                         
                         Button(action: {
                             paymentMethod = "Card"
@@ -194,18 +196,20 @@ struct ListOrderDetailView: View {
                                 .font(.title)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(paymentMethod == "Card" ? order.pay == true ? Color.gray : Color.blue : Color.clear)
+                                .background(paymentMethod == "Card" ? pay == true ? Color.gray : Color.blue : Color.clear)
                                 .foregroundColor(paymentMethod == "Card" ? Color.white : Color.blue)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 0)
                                         .stroke(Color.blue, lineWidth: 1))
                         }
-                        .disabled(order.pay == true)
+                        .disabled(pay == true)
                     }
                     Button(action: {
-                        order.pay = true
+                        pay = true
+                        order.isPay = true
+                        order.objectWillChange.send()
                     }) {
-                        Text(order.pay == true ? "Print Bill":"Pay")
+                        Text(pay == true ? "Print Bill":"Pay")
                             .font(.title)
                             .padding()
                             .frame(maxWidth: .infinity)
@@ -224,15 +228,16 @@ struct ListOrderDetailView: View {
 
 
 struct PreviewWrapper: View {
-    @State private var ordertemp = Order(customerName: "Alice", items: [item21, item22], Addingitems: [], total: 10.5, time: Date(), dineIn: "TakeOut", pay: false, sendOrder: false)
-
+    @State private var ordertemp = Order(customerName: "Alice", items: [item21, item22], Addingitems: [], total: 10.5, time: Date(), dineIn: "TakeOut", isPay: false, payment: "Card", sendOrder: false)
+    
     var body: some View {
-        ListOrderDetailView(order: $ordertemp)
+        ListOrderDetailView(order: ordertemp)
+//            .environmentObject(OrderStore())
     }
 }
 
 #Preview {
-//    ListOrderDetailView()
+    //    ListOrderDetailView()
     PreviewWrapper()
 }
 

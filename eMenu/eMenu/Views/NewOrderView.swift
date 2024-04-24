@@ -24,19 +24,22 @@ struct NewOrderView: View {
     
     
     var body: some View {
-        
-        if let order = thisOrder {
-                        Text("Order ID: \(order.id)")
-                        // Other views related to the order
-                    } else {
-                        Text("No order selected")
-                    }
-        
-        
         GeometryReader { geometry in
-            VStack{
+            if let order = thisOrder {
+                Text("Order ID: \(order.id)")
+                // Other views related to the order
+            } else {
+                Text("No order selected")
+                Text("No order selected")
+                Text("No order selected")
+                Text("No order selected")
+                Text("No order selected")
+                Text("No order selected")
+                Text("No order selected")
+            }
+            VStack(){
                 // SECTION 1
-                HStack(spacing: 0) {
+                HStack(spacing: 5) {
                     // LEFT COLUMN: list categories
                     VStack{
                         List{
@@ -51,9 +54,7 @@ struct NewOrderView: View {
                         .listStyle(.plain)
                     }
                     .background(Color(UIColor.systemGray6))
-                    .padding(5)
-                    .cornerRadius(25)
-                    .frame(width: geometry.size.width * 0.2)
+                    .frame(maxWidth: geometry.size.width * 0.2)
                     
                     
                     // MIDDLE COLUMN: list items
@@ -77,9 +78,7 @@ struct NewOrderView: View {
                         .listStyle(.plain)
                     }
                     .background(Color(UIColor.systemGray6))
-                    .padding(5)
-                    .cornerRadius(25)
-                    .frame(width: geometry.size.width * 0.3)
+                    .frame(maxWidth: geometry.size.width * 0.3)
                     
                     
                     // RIGHT COLUMN: summary
@@ -123,43 +122,25 @@ struct NewOrderView: View {
                         }
                     }
                     .background(Color(UIColor.systemGray6))
-                    .padding(5)
-                    .frame(width: geometry.size.width * 0.5)
+                    .frame(maxWidth: geometry.size.width * 0.5)
                     
                 }
                 .background(Color(UIColor.systemGray5))
-                .frame(height: geometry.size.height * 0.8)
-                
+                .frame(height: geometry.size.height * 0.76)
                 
                 
                 // SECTION 2
-                HStack(spacing: 0) {
-                    // Column 1
-                    VStack{
-                        Text("__________________________________________________________________")
-                        Spacer()
-                        
-                    }
-                    .background(Color(UIColor.systemGray6))
-                    .padding(5)
-                    .cornerRadius(25)
-                    
-                    
-                    // Column 2
+                HStack() {
+                    Spacer()
                     VStack{
                         SummaryPriceView(items: itemOrders).padding()
-                        Divider()
-                        Spacer()
                         SummaryButtonView(items: $itemOrders, time: $time, table: $table)
                     }
                     .background(Color(UIColor.systemGray6))
-                    .padding(5)
-                    .cornerRadius(25)
-                    
+                    .frame(maxWidth: geometry.size.width * 0.493)
                     
                 }
-                .background(Color(UIColor.systemGray5))
-                .frame(height: geometry.size.height * 0.2)
+                .frame(height: geometry.size.height * 0.24)
                 
             }
         }
@@ -307,12 +288,7 @@ struct NewOrderView: View {
                     order.dineIn = table
                     order.items = items
                     order.sendOrder = true
-                    if order.dineIn == "TakeOut"{
-                        order.pay = false
-                    } else {
-                        order.pay = true
-                    }
-                    order.pay = false
+                    order.isPay = false
                     order.total = calculateTotalPrice(items: items)
                     //                    context.insert(order)
                     print(order)
@@ -442,7 +418,7 @@ func hideKeyboard() {
 }
 
 
-//#Preview {
-//    NewOrderView()
-//        .environmentObject(OrderStore())
-//}
+#Preview {
+    NewOrderView()
+        .environmentObject(OrderStore())
+}
