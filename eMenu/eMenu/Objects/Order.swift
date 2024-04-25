@@ -46,7 +46,7 @@ class Order: Identifiable, ObservableObject {
     @Published var sendOrder: Bool
 
     init(customerName: String, items: [ItemOrder], Addingitems: [ItemOrder],  total: Double, time: Date, dineIn: String, isPay: Bool, payment: String, sendOrder: Bool) {
-        self.orderNumber = generateOrderNumber()
+        self.orderNumber = "None"
         self.customerName = customerName
         self.items = items
         self.Addingitems = Addingitems
@@ -77,8 +77,8 @@ class Order: Identifiable, ObservableObject {
 }
 
 class OrderStore: ObservableObject {
+    @Published var currentOrder: Order = Order()
     @Published var listOrders: [Order] = []
-    @Published var currentOrder = Order(customerName: "Alice", items: [item21, item22], Addingitems: [], total: 10.5, time: Date(), dineIn: "TakeOut", isPay: false, payment: "Cash", sendOrder: false)
     
 
     func addOrder(_ order: Order) {

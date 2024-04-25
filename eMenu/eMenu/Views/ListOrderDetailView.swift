@@ -14,11 +14,10 @@ var item4 = ItemOrder(name: "Large sauge", price: 2.0)
 let listAddItem = [item1, item2, item3, item4]
 
 struct ListOrderDetailView: View {
-    @StateObject var order:Order
     //    @EnvironmentObject var orderStore: OrderStore
-    @State private var paymentMethod: String?
-    @State private var pay: Bool = false
+    @StateObject var order:Order
     
+        
     var body: some View {
         VStack {
             // Title: name
@@ -94,10 +93,10 @@ struct ListOrderDetailView: View {
                 let total = subtotal*1.15
                 Text("Sub Total: \(String(format: "%.2f", subtotal))")
                 Text("HST(15%): \(String(format: "%.2f", subtotal*0.15))")
-                if paymentMethod == "Card"{
+                if order.payment == "Card"{
                     Text("Service Charge(3%): \(String(format: "%.2f", subtotal*0.03))")
                 }
-                Text("Total: \(String(format: "%.2f", paymentMethod == "Card" ? total*1.03:total))").bold()
+                Text("Total: \(String(format: "%.2f", order.payment == "Card" ? total*1.03:total))").bold()
             }.frame(maxWidth: .infinity, alignment: .trailing)
             
             
@@ -138,7 +137,7 @@ struct ListOrderDetailView: View {
                     }
                     
                     HStack{
-                        NavigationLink(destination: NewOrderView()) {
+                        NavigationLink(destination: NewOrderView(order: order)) {
                             Text("Edit")
                                 .font(.title)
                                 .padding()
@@ -175,47 +174,46 @@ struct ListOrderDetailView: View {
                 VStack(spacing:0){
                     HStack(spacing:0){
                         Button(action: {
-                            paymentMethod = "Cash"
+                            order.payment = "Cash"
                         }) {
                             Text("Cash")
                                 .font(.title)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(paymentMethod == "Cash" ? pay == true ? Color.gray : Color.blue : Color.clear)
-                                .foregroundColor(paymentMethod == "Cash" ? Color.white : Color.blue)
+                                .background(order.payment == "Cash" ? order.isPay == true ? Color.gray : Color.blue : Color.clear)
+                                .foregroundColor(order.payment == "Cash" ? Color.white : Color.blue)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 0)
                                         .stroke(Color.blue, lineWidth: 1))
                         }
-                        .disabled(pay == true)
+                        .disabled(order.isPay == true)
                         
                         Button(action: {
-                            paymentMethod = "Card"
+                            order.payment = "Card"
                         }) {
                             Text("Card")
                                 .font(.title)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(paymentMethod == "Card" ? pay == true ? Color.gray : Color.blue : Color.clear)
-                                .foregroundColor(paymentMethod == "Card" ? Color.white : Color.blue)
+                                .background(order.payment == "Card" ? order.isPay == true ? Color.gray : Color.blue : Color.clear)
+                                .foregroundColor(order.payment == "Card" ? Color.white : Color.blue)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 0)
                                         .stroke(Color.blue, lineWidth: 1))
                         }
-                        .disabled(pay == true)
+                        .disabled(order.isPay == true)
                     }
                     Button(action: {
-                        pay = true
                         order.isPay = true
                         order.objectWillChange.send()
                     }) {
-                        Text(pay == true ? "Print Bill":"Pay")
+                        Text(order.isPay == true ? "Print Bill":"Pay")
                             .font(.title)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(paymentMethod == nil ? Color.gray : Color.blue)
+                            .background(order.payment == "" ? Color.gray : Color.blue)
                             .foregroundColor(.white)
-                            .disabled((paymentMethod == nil))
+                            .disabled((order.payment == ""))
                     }
                 }
                 .frame(width:200)

@@ -58,59 +58,66 @@ struct ContentView: View {
         NavigationView{
             VStack{
                 Text("SaiGon's Garden").font(.title)
+//                GeometryReader { geometry in
                 NavigationView{
                     HStack{
                         VStack{
                             // Search bar
                             HStack{
                                 SearchBar(text: $searchText)
-                                NavigationLink(destination: NewOrderView()) {
+                                Button(action: {
+                                    isNewOrderView = true
+                                }) {
                                     Text("New order")
+                                }
+                                .fullScreenCover(isPresented: $isNewOrderView) {
+                                    NewOrderView(order: Order())
                                 }
                             }
                             
-                            // Filters
+                            // Filters buttons
                             HStack(spacing: 0){
                                 Button(action: {
                                     filter = "All"
-                                    }) {
-                                        Text("All")
-                                            .frame(maxWidth: .infinity)
-                                            .background(filter == "All" ? Color.blue : Color.clear)
-                                            .foregroundColor(filter == "All" ? Color.white : Color.blue)
-                                            .border(Color.blue, width: 1)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                }) {
+                                    Text("All")
+                                        .frame(maxWidth: .infinity)
+                                        .background(filter == "All" ? Color.blue : Color.clear)
+                                        .foregroundColor(filter == "All" ? Color.white : Color.blue)
+                                        .border(Color.blue, width: 1)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                                 Button(action: {
                                     filter = "Dine in"
-                                    }) {
-                                        Text("Dine in")
-                                            .frame(maxWidth: .infinity)
-                                            .background(filter == "Dine in" ? Color.blue : Color.clear)
-                                            .foregroundColor(filter == "Dine in" ? Color.white : Color.blue)
-                                            .border(Color.blue, width: 1)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                }) {
+                                    Text("Dine in")
+                                        .frame(maxWidth: .infinity)
+                                        .background(filter == "Dine in" ? Color.blue : Color.clear)
+                                        .foregroundColor(filter == "Dine in" ? Color.white : Color.blue)
+                                        .border(Color.blue, width: 1)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                                 Button(action: {
                                     filter = "Take out"
-                                    }) {
-                                        Text("Take out")
-                                            .frame(maxWidth: .infinity)
-                                            .background(filter == "Take out" ? Color.blue : Color.clear)
-                                            .foregroundColor(filter == "Take out" ? Color.white : Color.blue)
-                                            .border(Color.blue, width: 1)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                }) {
+                                    Text("Take out")
+                                        .frame(maxWidth: .infinity)
+                                        .background(filter == "Take out" ? Color.blue : Color.clear)
+                                        .foregroundColor(filter == "Take out" ? Color.white : Color.blue)
+                                        .border(Color.blue, width: 1)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                             .padding(.horizontal)
                             
                             List{
                                 ForEach(filteredOrders){ item in
+                                    NavigationLink(destination: ListOrderDetailView(order: item)){
 //                                    Button(action:{
+//                                        selectedOrder = item
 //                                        orderStore.currentOrder = item
 //                                    })
-                                    NavigationLink(destination: ListOrderDetailView(order: item))
-                                    {
+//                                    {
                                         VStack(alignment: .leading) {
                                             Text(item.orderNumber)
                                                 .font(.headline)
@@ -126,22 +133,33 @@ struct ContentView: View {
                                         }
                                     }
                                 }
+                                
                                 .onDelete { indexes in
                                     for index in indexes{
                                         // context.delete(orders[index])
                                         orderStore.listOrders.remove(at: index)
                                     }
                                 }
-                                NavigationLink(destination: NewOrderView()) {
-                                    Text("New Order").foregroundColor(.blue)
+                                Button(action: {
+                                    isNewOrderView = true
+                                }) {
+                                    Text("New order").foregroundColor(.blue)
+                                }
+                                .fullScreenCover(isPresented: $isNewOrderView) {
+                                    NewOrderView(order: Order())
                                 }
                             }
                             .listStyle(PlainListStyle())
                             
                         }
-                        
+//                        .frame(maxWidth: geometry.size.width * 0.3)
+//                        
+//                        ListOrderDetailView(order: selectedOrder)
+//                            .frame(maxWidth: geometry.size.width * 0.7)
                         
                     }
+                        
+                    
                 }
             }
         }

@@ -10,33 +10,18 @@ import SwiftUI
 //NEW ORDER BIG VIEW
 struct NewOrderView: View {
     
-    
+    @StateObject var order:Order
     @EnvironmentObject var orderStore: OrderStore
     
-    private var thisOrder: Order?
-    
-    @State private var itemOrders: [ItemOrder] = []
+//    @State private var itemOrders: [ItemOrder] = []
     @State private var time = Date()
-    @State private var table: String = "TakeOut"
-    
-    @State private var selectedCategory = categories[0]
+//    @State private var table: String = "TakeOut"
     @State private var customerTF = ""
     
+    @State private var selectedCategory = categories[0]
     
     var body: some View {
         GeometryReader { geometry in
-            if let order = thisOrder {
-                Text("Order ID: \(order.id)")
-                // Other views related to the order
-            } else {
-                Text("No order selected")
-                Text("No order selected")
-                Text("No order selected")
-                Text("No order selected")
-                Text("No order selected")
-                Text("No order selected")
-                Text("No order selected")
-            }
             VStack(){
                 // SECTION 1
                 HStack(spacing: 5) {
@@ -63,7 +48,7 @@ struct NewOrderView: View {
                             ForEach(selectedCategory.items){ item in
                                 Button(action: {
                                     let newItem = ItemOrder(name: item.name, price: item.price)
-                                    itemOrders.append(newItem)
+                                    order.items.append(newItem)
                                 }){
                                     HStack{
                                         Text(item.name)
@@ -86,7 +71,7 @@ struct NewOrderView: View {
                         Text("Order: #005-240709").font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/).padding(.top)
                         HStack{
                             // Customer Picker
-                            TextField("Customer", text: $customerTF, onCommit: {
+                            TextField("Customer", text: $order.customerName, onCommit: {
                                 hideKeyboard()
                             }).textFieldStyle(RoundedBorderTextFieldStyle())
                                 .onTapGesture {
@@ -95,7 +80,7 @@ struct NewOrderView: View {
                             Spacer()
                             
                             // Table Picker
-                            Picker("Select the table", selection: $table) {
+                            Picker("Select the table", selection: $order.dineIn) {
                                 ForEach(tables, id: \.self) { option in Text(option) } }
                             .pickerStyle(WheelPickerStyle())
                             .frame(height: 60)
@@ -106,18 +91,15 @@ struct NewOrderView: View {
                                 DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
                                     .datePickerStyle(DefaultDatePickerStyle())
                                     .labelsHidden()
-                                    .disabled(table != "TakeOut")
-                                    .background(time < Date.now && table == "TakeOut" ? Color.red.opacity(0.5) : Color.clear)
+                                    .disabled(order.dineIn != "TakeOut")
+                                    .background(time < Date.now && order.dineIn == "TakeOut" ? Color.red.opacity(0.5) : Color.clear)
                                     .cornerRadius(10)
                             }
                         }.padding(.horizontal)
                         Divider()
                         Spacer()
-                        if !itemOrders.isEmpty {
-//                            if thisOrder?.items != nil {
-//                                ListItemsView(items: thisOrder?.items)
-//                            }
-                            ListItemsView(items: $itemOrders)
+                        if !order.items.isEmpty {
+                            ListItemsView(items: $order.items)
                                 .frame(maxWidth: .infinity, alignment: .topLeading)
                         }
                     }
@@ -133,8 +115,8 @@ struct NewOrderView: View {
                 HStack() {
                     Spacer()
                     VStack{
-                        SummaryPriceView(items: itemOrders).padding()
-                        SummaryButtonView(items: $itemOrders, time: $time, table: $table)
+                        SummaryPriceView(items: order.items).padding()
+                        SummaryButtonView(items: $order.items, time: order.time, table: order.dineIn)
                     }
                     .background(Color(UIColor.systemGray6))
                     .frame(maxWidth: geometry.size.width * 0.493)
@@ -261,11 +243,8 @@ struct NewOrderView: View {
                 }
                 .frame(maxWidth: .infinity ,alignment: .trailing)
                 
-            }
-            
+            }   
         }
-        
-        
     }
     
     // SUMMARY: BUTTONS SECTION
@@ -273,14 +252,26 @@ struct NewOrderView: View {
         @EnvironmentObject var orderStore: OrderStore
         
         @Binding var items:[ItemOrder]
-        @Binding var time: Date
-        @Binding var table: String
+        var time: Date
+        var table: String
         
         //        @Environment(\.modelContext) private var context
         @Environment(\.presentationMode) var presentationMode
         
         var body: some View {
             HStack{
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Cancel")
+                        .font(.title)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                    
+                }
+                
                 Button(action: {
                     let order = Order()
                     order.orderNumber = generateOrderNumber()
@@ -293,7 +284,7 @@ struct NewOrderView: View {
                     //                    context.insert(order)
                     print(order)
                     orderStore.listOrders.append(order)
-                    items = [] ; time = Date.now ; table = "TakeOut"
+//                    items = [] ; time = Date.now ; table = "TakeOut"
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Send order")
@@ -304,9 +295,6 @@ struct NewOrderView: View {
                         .foregroundColor(.white)
                     
                 }
-                
-                
-                
             }
         }
     }
@@ -405,11 +393,7 @@ struct NewOrderView: View {
             }
         }
     }
-    
-    
-    
 }
-
 
 
 func hideKeyboard() {
@@ -417,8 +401,16 @@ func hideKeyboard() {
     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 }
 
+struct PreviewWrapper2: View {
+    @State private var ordertemp = Order(customerName: "Alice", items: [item21, item22], Addingitems: [], total: 10.5, time: Date(), dineIn: "TakeOut", isPay: false, payment: "Card", sendOrder: false)
+    
+    var body: some View {
+        NewOrderView(order: ordertemp)
+//            .environmentObject(OrderStore())
+    }
+}
 
 #Preview {
-    NewOrderView()
-        .environmentObject(OrderStore())
+    //    ListOrderDetailView()
+    PreviewWrapper2()
 }
