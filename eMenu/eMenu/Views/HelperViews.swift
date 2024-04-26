@@ -62,6 +62,27 @@ struct SearchBar: View {
     }
 }
 
+struct paymentButton: View {
+    var title: String
+    var payment: String
+    var action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Image(title)
+                .resizable()
+                .frame(width: 70, height: 50)
+                .background(payment == title ? Color.red:Color.clear)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 0)
+                        .stroke(Color.blue, lineWidth: 2)
+                        
+                        .opacity(payment == title ? 1.0 : 0.0)
+                )
+        }
+    }
+}
+
+
 // Function to calculate total price of items
 func calculateTotalPrice(items: [ItemOrder]?) -> Double {
     if let tempItems = items{

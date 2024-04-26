@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170EF44B2BDBFB2700F397D1 /* Payment.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 170EF44A2BDBFB2700F397D1 /* Payment.xcassets */; };
 		176B7FBF2B4873FD00D29A7B /* ItemOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176B7FBE2B4873FD00D29A7B /* ItemOrder.swift */; };
 		176B7FC12B48740B00D29A7B /* Order.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176B7FC02B48740B00D29A7B /* Order.swift */; };
 		176B7FC32B48742900D29A7B /* NewOrderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176B7FC22B48742900D29A7B /* NewOrderView.swift */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		170EF44A2BDBFB2700F397D1 /* Payment.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Payment.xcassets; sourceTree = "<group>"; };
 		176B7FBE2B4873FD00D29A7B /* ItemOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemOrder.swift; sourceTree = "<group>"; };
 		176B7FC02B48740B00D29A7B /* Order.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Order.swift; sourceTree = "<group>"; };
 		176B7FC22B48742900D29A7B /* NewOrderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewOrderView.swift; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				176B7FBC2B4873A400D29A7B /* Objects */,
 				176B7FBD2B4873E500D29A7B /* Views */,
 				17DAAB092B438FC300EF0D06 /* Assets.xcassets */,
+				170EF44A2BDBFB2700F397D1 /* Payment.xcassets */,
 				17DAAB0B2B438FC300EF0D06 /* Preview Content */,
 			);
 			path = eMenu;
@@ -161,6 +164,7 @@
 			files = (
 				17DAAB0D2B438FC300EF0D06 /* Preview Assets.xcassets in Resources */,
 				17DAAB0A2B438FC300EF0D06 /* Assets.xcassets in Resources */,
+				170EF44B2BDBFB2700F397D1 /* Payment.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

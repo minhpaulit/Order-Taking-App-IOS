@@ -20,6 +20,7 @@ struct NewOrderView: View {
     
     @State private var selectedCategory = categories[0]
     
+    
     var body: some View {
         GeometryReader { geometry in
             VStack(){
@@ -68,7 +69,7 @@ struct NewOrderView: View {
                     
                     // RIGHT COLUMN: summary
                     VStack{
-                        Text("Order: #005-240709").font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/).padding(.top)
+                        Text(order.orderNumber).font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/).padding(.top)
                         HStack{
                             // Customer Picker
                             TextField("Customer", text: $order.customerName, onCommit: {
@@ -116,7 +117,7 @@ struct NewOrderView: View {
                     Spacer()
                     VStack{
                         SummaryPriceView(items: order.items).padding()
-                        SummaryButtonView(items: $order.items, time: order.time, table: order.dineIn)
+                        SummaryButtonView(order: order)
                     }
                     .background(Color(UIColor.systemGray6))
                     .frame(maxWidth: geometry.size.width * 0.493)
@@ -141,6 +142,7 @@ struct NewOrderView: View {
     struct ListItemsView: View {
         @Binding var items: [ItemOrder]
         @State var isShowPopUpItemView = false
+        @State private var selectedItem = ItemOrder(name: "Nil", price: 0)
         
         var body: some View {
             List {
@@ -175,32 +177,36 @@ struct NewOrderView: View {
                                     .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
                             }
                         }
-                        
-                        // line 3: QuantityItem and Stepper
+                        // line 3:
                         HStack{
+                            // QuantityItem and Stepper
                             Text("Quantity: \(item.quantity)")
                             Stepper(String(item.quantity), value: $item.quantity, in: 1...10)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .fixedSize()
                                 .labelsHidden()
                             
+                            // Red edit button
                             Text("Edit")
                                 .onTapGesture(){
+                                    selectedItem = item
                                     isShowPopUpItemView.toggle()
                                 }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .foregroundColor(.red)
                                 .sheet(isPresented: $isShowPopUpItemView, content: {
-                                    PopUpItemView(itemOrder: $item, isShow: $isShowPopUpItemView)
+                                    PopUpItemView(itemOrder: $selectedItem, isShow: $isShowPopUpItemView)
                                 })
                         }
                     }
                 }
+                
                 .onDelete { indexes in
                     for index in indexes{
                         items.remove(at: index)
                     }
                 }
+                
             }
             .listStyle(.plain)
             
@@ -249,13 +255,8 @@ struct NewOrderView: View {
     
     // SUMMARY: BUTTONS SECTION
     struct SummaryButtonView: View {
+        var order: Order
         @EnvironmentObject var orderStore: OrderStore
-        
-        @Binding var items:[ItemOrder]
-        var time: Date
-        var table: String
-        
-        //        @Environment(\.modelContext) private var context
         @Environment(\.presentationMode) var presentationMode
         
         var body: some View {
@@ -269,22 +270,11 @@ struct NewOrderView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.red)
                         .foregroundColor(.white)
-                    
                 }
-                
+
                 Button(action: {
-                    let order = Order()
                     order.orderNumber = generateOrderNumber()
-                    order.time = time
-                    order.dineIn = table
-                    order.items = items
-                    order.sendOrder = true
-                    order.isPay = false
-                    order.total = calculateTotalPrice(items: items)
-                    //                    context.insert(order)
-                    print(order)
                     orderStore.listOrders.append(order)
-//                    items = [] ; time = Date.now ; table = "TakeOut"
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Send order")
@@ -315,33 +305,36 @@ struct NewOrderView: View {
             VStack {
                 Text(itemOrder.name)
                     .font(.title).padding()
-                //                Text(itemOrder.descriptions)
-                //                    .font(.subheadline)
-                //                    .padding()
                 
                 Text(String(format: "$%.2f", itemOrder.price))
                 CustomStepper(value: $itemOrder.quantity)
                 
                 HStack {
-                    List {
-                        ForEach(items2, id: \.self) { item in
-                            MultipleSelectionRow(title: item, isSelected: self.selectedItems2.contains(item), selectedColor: Color.red) {
-                                if self.selectedItems2.contains(item) {
-                                    self.selectedItems2.remove(item)
-                                } else {
-                                    self.selectedItems2.insert(item)
+                    VStack{
+                        Text("Remove:")
+                        List {
+                            ForEach(items2, id: \.self) { item in
+                                MultipleSelectionRow(title: item, isSelected: self.selectedItems2.contains(item), selectedColor: Color.red) {
+                                    if self.selectedItems2.contains(item) {
+                                        self.selectedItems2.remove(item)
+                                    } else {
+                                        self.selectedItems2.insert(item)
+                                    }
                                 }
                             }
                         }
                     }
                     
-                    List {
-                        ForEach(items, id: \.self) { item in
-                            MultipleSelectionRow(title: item, isSelected: self.selectedItems.contains(item), selectedColor: Color.green) {
-                                if self.selectedItems.contains(item) {
-                                    self.selectedItems.remove(item)
-                                } else {
-                                    self.selectedItems.insert(item)
+                    VStack{
+                        Text("Add:")
+                        List {
+                            ForEach(items, id: \.self) { item in
+                                MultipleSelectionRow(title: item, isSelected: self.selectedItems.contains(item), selectedColor: Color.green) {
+                                    if self.selectedItems.contains(item) {
+                                        self.selectedItems.remove(item)
+                                    } else {
+                                        self.selectedItems.insert(item)
+                                    }
                                 }
                             }
                         }
@@ -359,9 +352,10 @@ struct NewOrderView: View {
                     .cornerRadius(8)
                     
                     Button("Confirm") {
-                        isShow = false
+                        print(itemOrder.name)
                         itemOrder.noteAdd = selectedItems.joined(separator: ", ")
                         itemOrder.noteRemove = selectedItems2.joined(separator: ", ")
+                        isShow = false
                         
                     }
                     .padding()

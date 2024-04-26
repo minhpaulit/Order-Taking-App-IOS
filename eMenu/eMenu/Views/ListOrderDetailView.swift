@@ -137,6 +137,7 @@ struct ListOrderDetailView: View {
                     }
                     
                     HStack{
+                        
                         NavigationLink(destination: NewOrderView(order: order)) {
                             Text("Edit")
                                 .font(.title)
@@ -173,36 +174,23 @@ struct ListOrderDetailView: View {
                 // Pay combo buttons
                 VStack(spacing:0){
                     HStack(spacing:0){
-                        Button(action: {
+                        // Cash button
+                        paymentButton(title: "Cash", payment: order.payment, action: {
                             order.payment = "Cash"
-                        }) {
-                            Text("Cash")
-                                .font(.title)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(order.payment == "Cash" ? order.isPay == true ? Color.gray : Color.blue : Color.clear)
-                                .foregroundColor(order.payment == "Cash" ? Color.white : Color.blue)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 0)
-                                        .stroke(Color.blue, lineWidth: 1))
-                        }
-                        .disabled(order.isPay == true)
+                        }).disabled(order.isPay == true)
                         
-                        Button(action: {
-                            order.payment = "Card"
-                        }) {
-                            Text("Card")
-                                .font(.title)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(order.payment == "Card" ? order.isPay == true ? Color.gray : Color.blue : Color.clear)
-                                .foregroundColor(order.payment == "Card" ? Color.white : Color.blue)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 0)
-                                        .stroke(Color.blue, lineWidth: 1))
-                        }
-                        .disabled(order.isPay == true)
+                        // Debit button
+                        paymentButton(title: "Debit", payment: order.payment, action: {
+                            order.payment = "Debit"
+                        }).disabled(order.isPay == true)
+                        
+                        // Credit button
+                        paymentButton(title: "Credit", payment: order.payment, action: {
+                            order.payment = "Credit"
+                        }).disabled(order.isPay == true)
+                        
                     }
+                    
                     Button(action: {
                         order.isPay = true
                         order.objectWillChange.send()
@@ -211,12 +199,12 @@ struct ListOrderDetailView: View {
                             .font(.title)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(order.payment == "" ? Color.gray : Color.blue)
+                            .background(order.payment == "" ? Color.gray : Color.green)
                             .foregroundColor(.white)
                             .disabled((order.payment == ""))
                     }
                 }
-                .frame(width:200)
+                .frame(width:210)
             }
             
         }
